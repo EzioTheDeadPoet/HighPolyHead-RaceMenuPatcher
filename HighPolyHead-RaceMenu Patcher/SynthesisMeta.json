@@ -1,0 +1,8 @@
+﻿{
+  "Nickname": "High Poly Head - RaceMenu Patcher",
+  "Visibility": "Visible",
+  "OneLineDescription": "",
+  "LongDescription": "Patches the \"default\" RaceMenu presets to use the High Poly Head headparts, and hides the non HPH models during character creation.",
+  "PreferredAutoVersioning": "Default",
+  "RequiredMods": []
+}
