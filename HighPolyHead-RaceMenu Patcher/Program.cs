@@ -48,10 +48,10 @@ namespace HighPolyHeadUpdateRaces
                         browHeadPartList.Add(vanillaHeadPart.ToLinkGetter());
                     }
 
-                    if (hphHeadPart.EditorID.ToUpper().Contains("HEAD"))
-                    {
-                        headHeadPartList.Add(vanillaHeadPart.ToLinkGetter());
-                    }
+                    // if (hphHeadPart.EditorID.ToUpper().Contains("HEAD"))
+                    // {
+                    //     headHeadPartList.Add(vanillaHeadPart.ToLinkGetter());
+                    // }
                     if (vanillaHeadPart.EditorID != null && hphHeadPart.EditorID.EndsWith(vanillaHeadPart.EditorID) 
                                                          && !vanillaHeadPart.EditorID.StartsWith("00KLH_") )
                     {
@@ -174,7 +174,7 @@ namespace HighPolyHeadUpdateRaces
                     }
                     foreach (var part in parts)
                     {
-                        if (hasBrows || hasHead)
+                        if (hasBrows)
                         {
                             if (!browHeadPartList.Contains(part) && !headHeadPartList.Contains(part))
                             {
