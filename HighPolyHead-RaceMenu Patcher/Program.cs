@@ -152,26 +152,27 @@ namespace HighPolyHeadUpdateRaces
                 }
                 var withoutLastTwo = eid.Substring(0, eid.Length - 2);
 
-                if (!withoutLastTwo.EndsWith("Preset"))
+                if (!withoutLastTwo.EndsWith("Preset") && npcPreset.HeadParts != null)
                 {
                     var hasBrows = false;
                     var hasHead = false;
-                    INpc npcOverride = state.PatchMod.Npcs.GetOrAddAsOverride(npcPreset);
-                    for (var index = 0; index < npcOverride.HeadParts.Count; index++)
+                   
+                    for (var index = 0; index < npcPreset.HeadParts.Count; index++)
                     {
-                        hasBrows = browHeadPartList.Contains(npcOverride.HeadParts[index]);
-                        hasHead = headHeadPartList.Contains(npcOverride.HeadParts[index]);
+                        hasBrows = browHeadPartList.Contains(npcPreset.HeadParts[index]);
+                        hasHead = headHeadPartList.Contains(npcPreset.HeadParts[index]);
 
                     }
 
-                    var raceHphParts = npcOverride.Configuration.Flags.HasFlag(NpcConfiguration.Flag.Female)
+                    var raceHphParts = npcPreset.Configuration.Flags.HasFlag(NpcConfiguration.Flag.Female)
                         ? raceHphPartsFemale
                         : raceHphPartsMale;
                     
-                    if (!raceHphParts.TryGetValue(npcOverride.Race, out var parts))
+                    if (!raceHphParts.TryGetValue(npcPreset.Race, out var parts))
                     {
                         continue;
                     }
+                    INpc npcOverride = state.PatchMod.Npcs.GetOrAddAsOverride(npcPreset);
                     foreach (var part in parts)
                     {
                         if (hasBrows || hasHead)
