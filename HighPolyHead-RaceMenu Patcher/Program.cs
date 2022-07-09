@@ -48,10 +48,10 @@ namespace HighPolyHeadUpdateRaces
                         browHeadPartList.Add(vanillaHeadPart.ToLinkGetter());
                     }
 
-                    // if (hphHeadPart.EditorID.ToUpper().Contains("HEAD"))
-                    // {
-                    //     headHeadPartList.Add(vanillaHeadPart.ToLinkGetter());
-                    // }
+                    if (hphHeadPart.EditorID.ToUpper().Contains("HEAD"))
+                    {
+                        headHeadPartList.Add(vanillaHeadPart.ToLinkGetter());
+                    }
                     if (vanillaHeadPart.EditorID != null && hphHeadPart.EditorID.EndsWith(vanillaHeadPart.EditorID) 
                                                          && !vanillaHeadPart.EditorID.StartsWith("00KLH_") )
                     {
@@ -156,8 +156,8 @@ namespace HighPolyHeadUpdateRaces
                 {
                     var hasBrows = false;
                     var hasHead = false;
-                   
-                    foreach (var part in npcPreset.HeadParts)
+                    INpc npcOverride = state.PatchMod.Npcs.GetOrAddAsOverride(npcPreset);
+                    foreach (var part in npcOverride.HeadParts)
                     {
                         hasBrows = browHeadPartList.Contains(part);
                         hasHead = headHeadPartList.Contains(part);
@@ -167,14 +167,14 @@ namespace HighPolyHeadUpdateRaces
                         ? raceHphPartsFemale
                         : raceHphPartsMale;
                     
-                    INpc npcOverride = state.PatchMod.Npcs.GetOrAddAsOverride(npcPreset);
+                    
                     if (!raceHphParts.TryGetValue(npcOverride.Race, out var parts))
                     {
                         continue;
                     }
                     foreach (var part in parts)
                     {
-                        if (hasBrows)
+                        if (hasBrows || hasHead)
                         {
                             if (!browHeadPartList.Contains(part) && !headHeadPartList.Contains(part))
                             {
