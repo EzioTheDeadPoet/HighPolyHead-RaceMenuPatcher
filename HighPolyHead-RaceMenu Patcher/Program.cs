@@ -152,7 +152,7 @@ namespace HighPolyHeadUpdateRaces
                 }
                 var withoutLastTwo = eid.Substring(0, eid.Length - 2);
 
-                if (!withoutLastTwo.EndsWith("Preset") && npcPreset.HeadParts.Count < 0)
+                if (!withoutLastTwo.EndsWith("Preset") && npcPreset.HeadParts.Count > 0)
                 {
                     var hasBrows = false;
                     var hasHead = false;
