@@ -140,13 +140,13 @@ namespace HighPolyHeadUpdateRaces
                     INpc npcOverride = state.PatchMod.Npcs.GetOrAddAsOverride(npcPreset);
                     for (var index = 0; index < npcOverride.HeadParts.Count; index++)
                     {
-                        IFormLinkGetter<IHeadPartGetter> replacementHead = vanillaToHphParts[npcOverride.HeadParts[index].ToLinkGetter<>()];
-                        IFormLinkGetter<IHeadPartGetter> resolvedHead = replacementHead.ToLinkGetter<>();
+                        IFormLinkGetter<IHeadPartGetter> replacementHead = vanillaToHphParts[npcOverride.HeadParts[index]];
+                        IFormLinkGetter<IHeadPartGetter> resolvedHead = replacementHead;
                         npcOverride.HeadParts[index] = resolvedHead;
-                        hasBrows = browHeadPartList.Contains(npcOverride.HeadParts[index].ToLinkGetter<>());
+                        hasBrows = browHeadPartList.Contains(npcOverride.HeadParts[index]);
                     }
 
-                    foreach (var part in raceHphParts[npcOverride.Race.ToLinkGetter<>()])
+                    foreach (var part in raceHphParts[npcOverride.Race])
                     {
                         if (hasBrows)
                         {
