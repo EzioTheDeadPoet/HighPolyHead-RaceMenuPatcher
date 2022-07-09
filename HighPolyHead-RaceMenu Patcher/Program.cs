@@ -145,7 +145,10 @@ namespace HighPolyHeadUpdateRaces
                         npcOverride.HeadParts[index] = resolvedHead;
                         hasBrows = browHeadPartList.Contains(npcOverride.HeadParts[index]);
                     }
-
+                    if (!raceHphParts.TryGetValue(npcOverride.Race, out var val))
+                    {
+                        continue;
+                    }
                     foreach (var part in raceHphParts[npcOverride.Race])
                     {
                         if (hasBrows)
