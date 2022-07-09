@@ -18,21 +18,21 @@ namespace HighPolyHeadUpdateRaces
                 .SetTypicalOpen(GameRelease.SkyrimSE, "High Poly Head - RaceMenu Patcher.esp")
                 .Run(args);
         }
-
-        private static readonly ModKey ModKey = ModKey.FromNameAndExtension("High Poly Head.esm");
+        
+        public static readonly ModKey ModKey = ModKey.FromNameAndExtension("High Poly Head.esm");
 
         private static void RunPatch(IPatcherState<ISkyrimMod, ISkyrimModGetter> state)
         {
-
             if (!state.LoadOrder.ContainsKey(ModKey))
             {
                 throw new Exception("You need High Poly Head mod installed for this patch to do anything.");
             }
-
             // Dictionary containing correlation between vanilla headparts to the HPH equivalent
             var vanillaToHphParts = new Dictionary<IFormLinkGetter<IHeadPartGetter>, IFormLinkGetter<IHeadPartGetter>>();
             // Dictionary of the Race record headparts NPCs inherit that need replacing in the presets
-            var raceHphParts = new Dictionary<IFormLinkGetter<IRaceGetter>, List<IFormLinkGetter<IHeadPartGetter>>>();
+            var raceHphPartsMale = new Dictionary<IFormLinkGetter<IRaceGetter>, HashSet<IFormLinkGetter<IHeadPartGetter>>>();
+            var raceHphPartsFemale = new Dictionary<IFormLinkGetter<IRaceGetter>, HashSet<IFormLinkGetter<IHeadPartGetter>>>();
+            
             // List of Brow headparts
             var browHeadPartList = new HashSet<IFormLinkGetter<IHeadPartGetter>>();
             foreach (var hphHeadPart in state.LoadOrder.PriorityOrder.OnlyEnabled().HeadPart().WinningOverrides())
@@ -44,12 +44,12 @@ namespace HighPolyHeadUpdateRaces
                     if (vanillaHeadPart.EditorID != null && hphHeadPart.EditorID.EndsWith(vanillaHeadPart.EditorID) 
                                                          && !vanillaHeadPart.EditorID.StartsWith("00KLH_") )
                     {
-                        if (!vanillaToHphParts.ContainsKey(vanillaHeadPart.ToLink()))
+                        if (!vanillaToHphParts.ContainsKey(vanillaHeadPart.ToLinkGetter()))
                         {
-                            vanillaToHphParts[vanillaHeadPart.ToLink()] = hphHeadPart.ToLink();
+                            vanillaToHphParts[vanillaHeadPart.ToLinkGetter()] = hphHeadPart.ToLinkGetter();
                             if (hphHeadPart.EditorID.ToUpper().Contains("BROWS"))
                             {
-                                browHeadPartList.Add(hphHeadPart.ToLink());
+                                browHeadPartList.Add(hphHeadPart.ToLinkGetter());
                             }
                         }
                         IHeadPart gimmeHead = state.PatchMod.HeadParts.GetOrAddAsOverride(vanillaHeadPart);
@@ -106,8 +106,8 @@ namespace HighPolyHeadUpdateRaces
                         foreach (var raceHead in raceRecord.HeadData.Female.HeadParts)
                         {
                             if (!raceHead.Head.TryResolve(state.LinkCache, out var head2)) continue;
-                            if (!vanillaToHphParts.ContainsKey(head2.ToLinkGetter())) continue;
-                            raceHphParts.GetOrAdd(raceFormLinkGetter).Add(vanillaToHphParts[head2.ToLinkGetter()]);
+                            if (!vanillaToHphParts.TryGetValue(head2.ToLinkGetter(), out var parts)) continue;
+                            raceHphPartsFemale.GetOrAdd(raceFormLinkGetter).Add(parts);
                         }
                     }
                     if (raceRecord.HeadData.Male != null)
@@ -115,8 +115,8 @@ namespace HighPolyHeadUpdateRaces
                         foreach (var raceHead in raceRecord.HeadData.Male.HeadParts)
                         {
                             if (!raceHead.Head.TryResolve(state.LinkCache, out var head2)) continue;
-                            if (!vanillaToHphParts.ContainsKey(head2.ToLinkGetter())) continue;
-                            raceHphParts.GetOrAdd(raceFormLinkGetter).Add(vanillaToHphParts[head2.ToLinkGetter()]);
+                            if (!vanillaToHphParts.TryGetValue(head2.ToLinkGetter(), out var parts)) continue;
+                            raceHphPartsMale.GetOrAdd(raceFormLinkGetter).Add(parts);
                         }
                     }
                 }
@@ -140,16 +140,26 @@ namespace HighPolyHeadUpdateRaces
                     INpc npcOverride = state.PatchMod.Npcs.GetOrAddAsOverride(npcPreset);
                     for (var index = 0; index < npcOverride.HeadParts.Count; index++)
                     {
-                        IFormLinkGetter<IHeadPartGetter> replacementHead = vanillaToHphParts[npcOverride.HeadParts[index]];
+                        if (!vanillaToHphParts.TryGetValue(npcOverride.HeadParts[index], out var replacementHead))
+                        {
+                            continue;
+                        }
                         IFormLinkGetter<IHeadPartGetter> resolvedHead = replacementHead;
                         npcOverride.HeadParts[index] = resolvedHead;
                         hasBrows = browHeadPartList.Contains(npcOverride.HeadParts[index]);
                     }
-                    if (!raceHphParts.TryGetValue(npcOverride.Race, out var val))
+                    var raceHphParts = new Dictionary<IFormLinkGetter<IRaceGetter>, HashSet<IFormLinkGetter<IHeadPartGetter>>>();
+                    
+                    raceHphParts = npcOverride.Configuration.Flags.HasFlag(NpcConfiguration.Flag.Female)
+                        ? raceHphPartsFemale
+                        : raceHphPartsMale;
+                        
+
+                    if (!raceHphParts.TryGetValue(npcOverride.Race, out var parts))
                     {
                         continue;
                     }
-                    foreach (var part in raceHphParts[npcOverride.Race])
+                    foreach (var part in parts)
                     {
                         if (hasBrows)
                         {

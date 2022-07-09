@@ -4,3 +4,12 @@ VisualStudioVersion = 16.0.30330.147
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HighPolyHead-RaceMenu Patcher", "HighPolyHead-RaceMenu Patcher\HighPolyHead-RaceMenu Patcher.csproj", "{8BA2E1B7-DD65-42B6-A780-17E4037A3C1B}"
 EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		|Any CPU = |Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8BA2E1B7-DD65-42B6-A780-17E4037A3C1B}.|Any CPU.ActiveCfg = |Any CPU
+		{8BA2E1B7-DD65-42B6-A780-17E4037A3C1B}.|Any CPU.Build.0 = |Any CPU
+	EndGlobalSection
+EndGlobal
