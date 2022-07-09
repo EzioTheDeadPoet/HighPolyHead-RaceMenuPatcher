@@ -43,21 +43,21 @@ namespace HighPolyHeadUpdateRaces
                 // for each HPH record, loop through the vanilla ones again - seems a bit inefficient? compare two lists with LINQ instead?
                 foreach (var vanillaHeadPart in state.LoadOrder.PriorityOrder.HeadPart().WinningOverrides())
                 {
+                    if (hphHeadPart.EditorID.ToUpper().Contains("BROWS"))
+                    {
+                        browHeadPartList.Add(vanillaHeadPart.ToLinkGetter());
+                    }
+
+                    if (hphHeadPart.EditorID.ToUpper().Contains("HEAD"))
+                    {
+                        headHeadPartList.Add(vanillaHeadPart.ToLinkGetter());
+                    }
                     if (vanillaHeadPart.EditorID != null && hphHeadPart.EditorID.EndsWith(vanillaHeadPart.EditorID) 
                                                          && !vanillaHeadPart.EditorID.StartsWith("00KLH_") )
                     {
                         if (!vanillaToHphParts.ContainsKey(vanillaHeadPart.ToLinkGetter()))
                         {
                             vanillaToHphParts[vanillaHeadPart.ToLinkGetter()] = hphHeadPart.ToLinkGetter();
-                            if (hphHeadPart.EditorID.ToUpper().Contains("BROWS"))
-                            {
-                                browHeadPartList.Add(vanillaHeadPart.ToLinkGetter());
-                            }
-
-                            if (hphHeadPart.EditorID.ToUpper().Contains("HEAD"))
-                            {
-                                headHeadPartList.Add(vanillaHeadPart.ToLinkGetter());
-                            }
                         }
                         IHeadPart gimmeHead = state.PatchMod.HeadParts.GetOrAddAsOverride(vanillaHeadPart);
                         gimmeHead.Flags &= ~HeadPart.Flag.Playable;
