@@ -18,8 +18,8 @@ namespace HighPolyHeadUpdateRaces
                 .SetTypicalOpen(GameRelease.SkyrimSE, "High Poly Head - RaceMenu Patcher.esp")
                 .Run(args);
         }
-        
-        public static readonly ModKey ModKey = ModKey.FromNameAndExtension("High Poly Head.esm");
+
+        private static readonly ModKey ModKey = ModKey.FromNameAndExtension("High Poly Head.esm");
 
         private static void RunPatch(IPatcherState<ISkyrimMod, ISkyrimModGetter> state)
         {
@@ -106,7 +106,7 @@ namespace HighPolyHeadUpdateRaces
                 }
                 
                 var raceOverride = raceRecord.DeepCopy();
-                bool changed = false;
+                var changed = false;
 
                 if (raceOverride.HeadData != null )
                 {
@@ -140,8 +140,8 @@ namespace HighPolyHeadUpdateRaces
                 }
 
             }
-            // Now NPC records for preset defaults
-            // by now you can tell ive given up on efficiency and just wanted to get the damn thing working
+            
+            // NPC Records
             foreach(var npcPreset in state.LoadOrder.PriorityOrder.OnlyEnabled().Npc().WinningOverrides())
             {
                 if (npcPreset.EditorID == null) continue;
@@ -152,27 +152,26 @@ namespace HighPolyHeadUpdateRaces
                 }
                 var withoutLastTwo = eid.Substring(0, eid.Length - 2);
 
-                if (!withoutLastTwo.EndsWith("Preset") && npcPreset.HeadParts != null)
+                if (!withoutLastTwo.EndsWith("Preset") && npcPreset.HeadParts.Count < 0)
                 {
                     var hasBrows = false;
                     var hasHead = false;
                    
-                    for (var index = 0; index < npcPreset.HeadParts.Count; index++)
+                    foreach (var part in npcPreset.HeadParts)
                     {
-                        hasBrows = browHeadPartList.Contains(npcPreset.HeadParts[index]);
-                        hasHead = headHeadPartList.Contains(npcPreset.HeadParts[index]);
-
+                        hasBrows = browHeadPartList.Contains(part);
+                        hasHead = headHeadPartList.Contains(part);
                     }
 
                     var raceHphParts = npcPreset.Configuration.Flags.HasFlag(NpcConfiguration.Flag.Female)
                         ? raceHphPartsFemale
                         : raceHphPartsMale;
                     
-                    if (!raceHphParts.TryGetValue(npcPreset.Race, out var parts))
+                    INpc npcOverride = state.PatchMod.Npcs.GetOrAddAsOverride(npcPreset);
+                    if (!raceHphParts.TryGetValue(npcOverride.Race, out var parts))
                     {
                         continue;
                     }
-                    INpc npcOverride = state.PatchMod.Npcs.GetOrAddAsOverride(npcPreset);
                     foreach (var part in parts)
                     {
                         if (hasBrows || hasHead)
