@@ -48,7 +48,7 @@ namespace HighPolyHeadUpdateRaces
                         browHeadPartList.Add(vanillaHeadPart.ToLinkGetter());
                     }
 
-                    if (hphHeadPart.EditorID.ToUpper().Contains("HEAD"))
+                    if (hphHeadPart.EditorID.Contains("Head"))
                     {
                         headHeadPartList.Add(vanillaHeadPart.ToLinkGetter());
                     }
