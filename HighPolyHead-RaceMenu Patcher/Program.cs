@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Mutagen.Bethesda;
 using Mutagen.Bethesda.FormKeys.SkyrimSE;
 using Mutagen.Bethesda.Synthesis;
@@ -134,7 +135,6 @@ namespace HighPolyHeadUpdateRaces
             // by now you can tell ive given up on efficiency and just wanted to get the damn thing working
             foreach(var npcPreset in state.LoadOrder.PriorityOrder.OnlyEnabled().Npc().WinningOverrides())
             {
-                
                 if (npcPreset.EditorID == null) continue;
                 var eid = npcPreset.EditorID;
                 if(eid.Length <= 3)
@@ -147,13 +147,14 @@ namespace HighPolyHeadUpdateRaces
                 {
 
                     var changed = false;
-                    var npcPartTypes = new HashSet<Type>();
+                    var npcPartTypes = new HashSet<HeadPart.TypeEnum>();
 
                     var npcDeepCopy = npcPreset.DeepCopy();
                     
                     foreach (var part in npcDeepCopy.HeadParts)
                     {
-                        npcPartTypes.Add(part.Type);
+                        if (!part.TryResolve(state.LinkCache, out var headPartGetter)) continue;
+                        if (headPartGetter.Type != null) npcPartTypes.Add((HeadPart.TypeEnum) headPartGetter.Type);
                     }
 
                     var raceHeadParts = npcDeepCopy.Configuration.Flags.HasFlag(NpcConfiguration.Flag.Female)
@@ -167,11 +168,11 @@ namespace HighPolyHeadUpdateRaces
                         
                     foreach (var part in currentRaceHeadParts)
                     {
-                        if (!npcPartTypes.Contains(part.Type))
-                        {
-                            npcDeepCopy.HeadParts.Add(part);
-                            changed = true;
-                        }
+                        part.TryResolve(state.LinkCache, out var headPartGetter);
+                        if (headPartGetter?.Type == null) continue;
+                        if (npcPartTypes.Contains((HeadPart.TypeEnum) headPartGetter.Type)) continue;
+                        npcDeepCopy.HeadParts.Add(part);
+                        changed = true;
                     }
 
                     if (changed)
