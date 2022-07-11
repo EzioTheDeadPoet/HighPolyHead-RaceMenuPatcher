@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Mutagen.Bethesda;
 using Mutagen.Bethesda.FormKeys.SkyrimSE;
 using Mutagen.Bethesda.Synthesis;
@@ -21,7 +20,7 @@ namespace HighPolyHeadUpdateRaces
                 .Run(args);
         }
         
-        public static readonly ModKey ModKey = ModKey.FromNameAndExtension("High Poly Head.esm");
+        private static readonly ModKey ModKey = ModKey.FromNameAndExtension("High Poly Head.esm");
 
         private static void RunPatch(IPatcherState<ISkyrimMod, ISkyrimModGetter> state)
         {
