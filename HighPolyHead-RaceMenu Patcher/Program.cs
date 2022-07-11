@@ -30,12 +30,10 @@ namespace HighPolyHeadUpdateRaces
             // Dictionary containing correlation between vanilla headparts to the HPH equivalent
             var vanillaToHphParts = new Dictionary<IFormLinkGetter<IHeadPartGetter>, IFormLinkGetter<IHeadPartGetter>>();
             // Dictionary of the Race record headparts NPCs inherit that need replacing in the presets
-            var raceHphPartsMale = new Dictionary<IFormLinkGetter<IRaceGetter>, HashSet<IFormLinkGetter<IHeadPartGetter>>>();
-            var raceHphPartsFemale = new Dictionary<IFormLinkGetter<IRaceGetter>, HashSet<IFormLinkGetter<IHeadPartGetter>>>();
+            var raceHeadPartsMale = new Dictionary<IFormLinkGetter<IRaceGetter>, HashSet<IFormLinkGetter<IHeadPartGetter>>>();
+            var raceHeadPartsFemale = new Dictionary<IFormLinkGetter<IRaceGetter>, HashSet<IFormLinkGetter<IHeadPartGetter>>>();
             
             // List of Brow headparts
-            var browHeadPartList = new HashSet<IFormLinkGetter<IHeadPartGetter>>();
-            var headHeadPartList = new HashSet<IFormLinkGetter<IHeadPartGetter>>();
             
             foreach (var hphHeadPart in state.LoadOrder.PriorityOrder.OnlyEnabled().HeadPart().WinningOverrides())
             {
@@ -49,15 +47,6 @@ namespace HighPolyHeadUpdateRaces
                         if (!vanillaToHphParts.ContainsKey(vanillaHeadPart.ToLinkGetter()))
                         {
                             vanillaToHphParts[vanillaHeadPart.ToLinkGetter()] = hphHeadPart.ToLinkGetter();
-                            if (hphHeadPart.EditorID.ToUpper().Contains("BROWS"))
-                            {
-                                browHeadPartList.Add(vanillaHeadPart.ToLinkGetter());
-                            }
-
-                            if (hphHeadPart.EditorID.ToUpper().Contains("HEAD"))
-                            {
-                                headHeadPartList.Add(vanillaHeadPart.ToLinkGetter());
-                            }
                         }
                         IHeadPart gimmeHead = state.PatchMod.HeadParts.GetOrAddAsOverride(vanillaHeadPart);
                         gimmeHead.Flags &= ~HeadPart.Flag.Playable;
@@ -117,7 +106,7 @@ namespace HighPolyHeadUpdateRaces
                         {
                             if (!raceHead.Head.TryResolve(state.LinkCache, out var head2)) continue;
                             if (!vanillaToHphParts.TryGetValue(head2.ToLinkGetter(), out var part)) continue;
-                            raceHphPartsFemale.GetOrAdd(raceFormLinkGetter).Add(head2.ToLinkGetter());
+                            raceHeadPartsFemale.GetOrAdd(raceFormLinkGetter).Add(head2.ToLinkGetter());
                             changed = true;
                             raceHead.Head.SetTo(part);
                         }
@@ -128,7 +117,7 @@ namespace HighPolyHeadUpdateRaces
                         {
                             if (!raceHead.Head.TryResolve(state.LinkCache, out var head2)) continue;
                             if (!vanillaToHphParts.TryGetValue(head2.ToLinkGetter(), out var part)) continue;
-                            raceHphPartsMale.GetOrAdd(raceFormLinkGetter).Add(head2.ToLinkGetter());
+                            raceHeadPartsMale.GetOrAdd(raceFormLinkGetter).Add(head2.ToLinkGetter());
                             changed = true;
                             raceHead.Head.SetTo(part);
                         }
@@ -154,37 +143,44 @@ namespace HighPolyHeadUpdateRaces
 
                 if (!withoutLastTwo.EndsWith("Preset"))
                 {
-                    var hasBrows = false;
-                    var hasHead = false;
-                    INpc npcOverride = state.PatchMod.Npcs.GetOrAddAsOverride(npcPreset);
-                    for (var index = 0; index < npcOverride.HeadParts.Count; index++)
-                    {
-                        hasBrows = browHeadPartList.Contains(npcOverride.HeadParts[index]);
-                        hasHead = headHeadPartList.Contains(npcOverride.HeadParts[index]);
-
-                    }
-
-                    var raceHphParts = npcOverride.Configuration.Flags.HasFlag(NpcConfiguration.Flag.Female)
-                        ? raceHphPartsFemale
-                        : raceHphPartsMale;
                     
-                    if (!raceHphParts.TryGetValue(npcOverride.Race, out var parts))
+                    
+
+                    var changed = false;
+                    HashSet<Type> npcPartTypes = new HashSet<Type>();
+
+                    var npcDeepCopy = npcPreset.DeepCopy();
+                    
+                    for (var index = 0; index < npcDeepCopy.HeadParts.Count; index++)
                     {
-                        continue;
+                        npcPartTypes.Add(npcDeepCopy.HeadParts[index].Type);
                     }
-                    foreach (var part in parts)
+
+                    IReadOnlyList<IHeadPartReferenceGetter> raceHeadParts;
+
+                    if (!npcDeepCopy.Race.TryResolve(state.LinkCache, out var race)) continue;
+                    if (npcDeepCopy.Configuration.Flags.HasFlag(NpcConfiguration.Flag.Female))
+                    { 
+                        if (race.HeadData?.Female?.HeadParts == null) continue;
+                        raceHeadParts = race.HeadData.Female.HeadParts;
+                    }
+                    else
                     {
-                        if (hasBrows || hasHead)
+                        if (race.HeadData?.Male?.HeadParts == null) continue;
+                        raceHeadParts = race.HeadData.Male.HeadParts;
+                    }
+                        
+                    foreach (var part in raceHeadParts)
+                    {
+                        if (npcPartTypes.Contains(part.Head.Type))
                         {
-                            if (!browHeadPartList.Contains(part) && !headHeadPartList.Contains(part))
-                            {
-                                npcOverride.HeadParts.Add(part);
-                            }
+                            npcDeepCopy.HeadParts.Add(part.Head);
                         }
-                        else
-                        {
-                            npcOverride.HeadParts.Add(part);
-                        }
+                    }
+
+                    if (changed)
+                    {
+                        state.PatchMod.Npcs.Set(npcDeepCopy);
                     }
                 }
 
