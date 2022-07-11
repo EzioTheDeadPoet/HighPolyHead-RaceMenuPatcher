@@ -7,5 +7,5 @@ And it disables all their vanilla equivalent parts for character creation to pre
 
 Before running make sure you haven't used a similar patcher to automatically alter your race-headparts since having edits like that on your loadorder will break the patcher.
 
-big thanks to @JanuarySnow they wrote the 1st version of this based on my initial knowledge on how presets work. 
+big thanks to [@JanuarySnow](https://github.com/JanuarySnow) they wrote the 1st version of this based on my initial knowledge on how presets work. 
 the original patcher can be found [here](https://github.com/JanuarySnow/hph_replacer) for reference.
