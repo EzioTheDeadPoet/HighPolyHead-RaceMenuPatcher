@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Mutagen.Bethesda;
+using Mutagen.Bethesda.FormKeys.SkyrimSE;
 using Mutagen.Bethesda.Synthesis;
 using Mutagen.Bethesda.Skyrim;
 using Mutagen.Bethesda.Plugins;
@@ -133,6 +134,7 @@ namespace HighPolyHeadUpdateRaces
             // by now you can tell ive given up on efficiency and just wanted to get the damn thing working
             foreach(var npcPreset in state.LoadOrder.PriorityOrder.OnlyEnabled().Npc().WinningOverrides())
             {
+                
                 if (npcPreset.EditorID == null) continue;
                 var eid = npcPreset.EditorID;
                 if(eid.Length <= 3)
@@ -141,40 +143,34 @@ namespace HighPolyHeadUpdateRaces
                 }
                 var withoutLastTwo = eid.Substring(0, eid.Length - 2);
 
-                if (!withoutLastTwo.EndsWith("Preset"))
+                if (!withoutLastTwo.EndsWith("Preset") && !npcPreset.Race.Equals(Skyrim.Race.FoxRace))
                 {
-                    
-                    
 
                     var changed = false;
-                    HashSet<Type> npcPartTypes = new HashSet<Type>();
+                    var npcPartTypes = new HashSet<Type>();
 
                     var npcDeepCopy = npcPreset.DeepCopy();
                     
-                    for (var index = 0; index < npcDeepCopy.HeadParts.Count; index++)
+                    foreach (var part in npcDeepCopy.HeadParts)
                     {
-                        npcPartTypes.Add(npcDeepCopy.HeadParts[index].Type);
+                        npcPartTypes.Add(part.Type);
                     }
 
-                    IReadOnlyList<IHeadPartReferenceGetter> raceHeadParts;
-
-                    if (!npcDeepCopy.Race.TryResolve(state.LinkCache, out var race)) continue;
-                    if (npcDeepCopy.Configuration.Flags.HasFlag(NpcConfiguration.Flag.Female))
-                    { 
-                        if (race.HeadData?.Female?.HeadParts == null) continue;
-                        raceHeadParts = race.HeadData.Female.HeadParts;
-                    }
-                    else
+                    var raceHeadParts = npcDeepCopy.Configuration.Flags.HasFlag(NpcConfiguration.Flag.Female)
+                        ? raceHeadPartsFemale
+                        : raceHeadPartsMale;
+                    
+                    if (!raceHeadParts.TryGetValue(npcDeepCopy.Race, out var currentRaceHeadParts))
                     {
-                        if (race.HeadData?.Male?.HeadParts == null) continue;
-                        raceHeadParts = race.HeadData.Male.HeadParts;
+                        continue;
                     }
                         
-                    foreach (var part in raceHeadParts)
+                    foreach (var part in currentRaceHeadParts)
                     {
-                        if (npcPartTypes.Contains(part.Head.Type))
+                        if (!npcPartTypes.Contains(part.Type))
                         {
-                            npcDeepCopy.HeadParts.Add(part.Head);
+                            npcDeepCopy.HeadParts.Add(part);
+                            changed = true;
                         }
                     }
 
@@ -186,7 +182,7 @@ namespace HighPolyHeadUpdateRaces
 
                 if (withoutLastTwo.EndsWith("Preset"))
                 {
-                    INpc npcOverride = state.PatchMod.Npcs.GetOrAddAsOverride(npcPreset);
+                    var npcOverride = state.PatchMod.Npcs.GetOrAddAsOverride(npcPreset);
                     for (var index = 0; index < npcOverride.HeadParts.Count; index++)
                     {
                         if (!vanillaToHphParts.TryGetValue(npcOverride.HeadParts[index], out var replacementHead))
