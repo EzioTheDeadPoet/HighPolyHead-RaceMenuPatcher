@@ -20,8 +20,8 @@ namespace HighPolyHeadUpdateRaces
                 .SetTypicalOpen(GameRelease.SkyrimSE, "High Poly Head - RaceMenu Patcher.esp")
                 .Run(args);
         }
-        
-        public static readonly ModKey ModKey = ModKey.FromNameAndExtension("High Poly Head.esm");
+
+        private static readonly ModKey ModKey = ModKey.FromNameAndExtension("High Poly Head.esm");
 
         private static void RunPatch(IPatcherState<ISkyrimMod, ISkyrimModGetter> state)
         {
@@ -43,6 +43,15 @@ namespace HighPolyHeadUpdateRaces
                 // for each HPH record, loop through the vanilla ones again - seems a bit inefficient? compare two lists with LINQ instead?
                 foreach (var vanillaHeadPart in state.LoadOrder.PriorityOrder.HeadPart().WinningOverrides())
                 {
+                    if (hphHeadPart.EditorID.ToUpper().Contains("BROWS"))
+                    {
+                        browHeadPartList.Add(vanillaHeadPart.ToLinkGetter());
+                    }
+
+                    if (hphHeadPart.EditorID.Contains("Head"))
+                    {
+                        headHeadPartList.Add(vanillaHeadPart.ToLinkGetter());
+                    }
                     if (vanillaHeadPart.EditorID != null && hphHeadPart.EditorID.EndsWith(vanillaHeadPart.EditorID) 
                                                          && !vanillaHeadPart.EditorID.StartsWith("00KLH_") )
                     {
@@ -97,7 +106,7 @@ namespace HighPolyHeadUpdateRaces
                 }
                 
                 var raceOverride = raceRecord.DeepCopy();
-                bool changed = false;
+                var changed = false;
 
                 if (raceOverride.HeadData != null )
                 {
@@ -131,8 +140,8 @@ namespace HighPolyHeadUpdateRaces
                 }
 
             }
-            // Now NPC records for preset defaults
-            // by now you can tell ive given up on efficiency and just wanted to get the damn thing working
+            
+            // NPC Records
             foreach(var npcPreset in state.LoadOrder.PriorityOrder.OnlyEnabled().Npc().WinningOverrides())
             {
                 if (npcPreset.EditorID == null) continue;
@@ -162,6 +171,7 @@ namespace HighPolyHeadUpdateRaces
                         : raceHeadPartsMale;
                     
                     if (!raceHeadParts.TryGetValue(npcDeepCopy.Race, out var currentRaceHeadParts))
+
                     {
                         continue;
                     }

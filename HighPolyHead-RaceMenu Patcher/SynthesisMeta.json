@@ -1,6 +1,6 @@
 {
   "Nickname": "HighPolyHead-RaceMenu Patcher",
-  "Visibility": "Visible",
+  "Visibility": "Exclude",
   "OneLineDescription": "Patches Racemenu to use Highl Poly Head",
   "LongDescription": "This Tool patches racemenu relevant records to use High Poly Head records instead of their equivalent vanilla Records for character creation, making the default presets use the High Poly Head parts.\r\nAnd it disables all their vanilla equivalent parts for character creation to prevent the use of the replaced parts.\r\n\r\nBefore running make sure you haven't used a similar patcher to automatically alter your race-headparts since having edits like that on your loadorder will break the patcher.",
   "PreferredAutoVersioning": "LatestTag",
