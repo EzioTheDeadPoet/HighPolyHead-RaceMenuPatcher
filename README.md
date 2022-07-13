@@ -1,4 +1,4 @@
-﻿# High Poly Head - RaceMenu Patcher
+# High Poly Head - RaceMenu Patcher
 
 This Tool patches RaceMenu relevant records to use High Poly Head records instead of their equivalent vanilla Records for character creation, making the default presets use the High Poly Head parts, normally you need to manually select the High Poly Head parts not anymore.
 And it disables all their vanilla equivalent parts for character creation to prevent the use of the replaced parts.
@@ -39,6 +39,10 @@ Make sure that the generated esp is enabled in your loadorder after closing Synt
 - Now the character creation works, but why did we store the replaced headparts ? Well the way headparts for NPCs work is based on object inheritance, so if an NPC is a nord it gets all the records and looks like the default nord, but if you want to change the NPCs looks the NPC record only stores what is different to the template it was build from. Causing and issue with the replaced head parts for the races and the facegen meshes for the NPCs causing the [Dark Face Bug](https://ck.uesp.net/wiki/Dark_Face_Bug). To fix that we now use the data stored in the previous step and go through every NPC and check if they are missing a headpart that was part of their race template and add those missing headparts back to the NPCs.
 - And with that we are done.
 
+### Can I look at the code for this ?
+
+Sure, it is licensed under a GPL-3.0 License and can be inspected on [GitHub](https://github.com/EzioTheDeadPoet/HighPolyHead-RaceMenuPatcher).
+
 ### Why did you make this patcher ?
 
 - Because I want to improve the quality of modded setups. Especially the ones I share in the form of Wabbajack Modlist similar to many other and collections.
@@ -50,6 +54,6 @@ Make sure that the generated esp is enabled in your loadorder after closing Synt
 
 ## Special Thanks - Credits
 
-- Thanks to JanuarySnow who worked for me on the 1st prototype of this, based on my back then still lacking knowledge of the NPC headpart problem (mainly because my test setup used a HPH NPC overhaul).
+- Thanks to [@JanuarySnow](https://github.com/JanuarySnow) who worked for me on the [1st prototype](https://github.com/JanuarySnow/hph_replacer) of this, based on my back then still lacking knowledge of the NPC headpart problem (mainly because my test setup used a HPH NPC overhaul).
 - Thanks to Noggog for creating Mutagen and Synthesis which made this possible at all.
 - Thanks to my supporters listed in the [Hall of Fame](https://eziothedeadpoet.github.io/AboutMe/HALLOFFAME.html)
