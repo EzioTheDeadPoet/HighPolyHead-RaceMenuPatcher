@@ -28,6 +28,9 @@ namespace HighPolyHeadUpdateRaces
             {
                 throw new Exception("You need High Poly Head mod installed for this patch to do anything.");
             }
+            
+            Console.WriteLine("Running Test!");
+            
             // Dictionary containing correlation between vanilla headparts to the HPH equivalent
             var vanillaToHphParts = new Dictionary<IFormLinkGetter<IHeadPartGetter>, IFormLinkGetter<IHeadPartGetter>>();
             // Dictionary of the Race record headparts NPCs inherit that need replacing in the presets
@@ -73,10 +76,9 @@ namespace HighPolyHeadUpdateRaces
                     foreach (var raceHead in raceRecord.HeadData.Male.HeadParts)
                     {
                         if (!raceHead.Head.TryResolve(state.LinkCache, out var head2)) continue;
-                        if (vanillaToHphParts.ContainsKey(head2.ToLinkGetter()))
-                        {
-                            hasMaleOverride = true;
-                        }
+                        if (!vanillaToHphParts.ContainsKey(head2.ToLinkGetter())) continue;
+                        hasMaleOverride = true;
+                        break;
                     }
                 }
                 if (raceRecord.HeadData.Female != null)
@@ -84,10 +86,9 @@ namespace HighPolyHeadUpdateRaces
                     foreach (var raceHead in raceRecord.HeadData.Female.HeadParts)
                     {
                         if (!raceHead.Head.TryResolve(state.LinkCache, out var head2)) continue;
-                        if (vanillaToHphParts.ContainsKey(head2.ToLinkGetter()))
-                        {
-                            hasFemaleOverride = true;
-                        }
+                        if (!vanillaToHphParts.ContainsKey(head2.ToLinkGetter())) continue;
+                        hasFemaleOverride = true;
+                        break;
                     }
                 }
                 if(!hasFemaleOverride && !hasMaleOverride)
@@ -96,7 +97,7 @@ namespace HighPolyHeadUpdateRaces
                 }
                 
                 var raceOverride = raceRecord.DeepCopy();
-                bool changed = false;
+                var changed = false;
 
                 if (raceOverride.HeadData != null )
                 {
@@ -136,11 +137,8 @@ namespace HighPolyHeadUpdateRaces
             {
                 if (npcPreset.EditorID == null) continue;
                 var eid = npcPreset.EditorID;
-                if(eid.Length <= 3)
-                {
-                    continue;
-                }
-                var withoutLastTwo = eid.Substring(0, eid.Length - 2);
+                
+                var withoutLastTwo = (eid.Length > 2) ? eid[..^2] : eid;
 
                 if (!withoutLastTwo.EndsWith("Preset") && !npcPreset.Race.Equals(Skyrim.Race.FoxRace))
                 {
@@ -180,17 +178,15 @@ namespace HighPolyHeadUpdateRaces
                     }
                 }
 
-                if (withoutLastTwo.EndsWith("Preset"))
+                if (!withoutLastTwo.EndsWith("Preset")) continue;
+                var npcOverride = state.PatchMod.Npcs.GetOrAddAsOverride(npcPreset);
+                for (var index = 0; index < npcOverride.HeadParts.Count; index++)
                 {
-                    var npcOverride = state.PatchMod.Npcs.GetOrAddAsOverride(npcPreset);
-                    for (var index = 0; index < npcOverride.HeadParts.Count; index++)
+                    if (!vanillaToHphParts.TryGetValue(npcOverride.HeadParts[index], out var replacementHead))
                     {
-                        if (!vanillaToHphParts.TryGetValue(npcOverride.HeadParts[index], out var replacementHead))
-                        {
-                            continue;
-                        }
-                        npcOverride.HeadParts[index] = replacementHead;
+                        continue;
                     }
+                    npcOverride.HeadParts[index] = replacementHead;
                 }
             }
         }

@@ -7,5 +7,9 @@
   "RequiredMods": [
     "High Poly Head.esm"
   ],
-  "TargetedReleases": []
+  "TargetedReleases": [
+    "SkyrimSE",
+    "SkyrimVR",
+    "SkyrimSEGog"
+  ]
 }
