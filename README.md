@@ -17,7 +17,7 @@ To some this might look like a useless thing since "it is only a few clicks", we
 
 ## Installation
 
-- Download the .synth file from this modpage.
+- Download the .synth file from this [modpage](https://www.nexusmods.com/skyrimspecialedition/mods/71332).
 - Launch your Synthesis installation.
     - From your mod manager of choice.
 - Double-click the .synth file.
