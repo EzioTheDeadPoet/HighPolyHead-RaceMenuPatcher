@@ -135,59 +135,71 @@ namespace HighPolyHeadUpdateRaces
             // by now you can tell ive given up on efficiency and just wanted to get the damn thing working
             foreach(var npcPreset in state.LoadOrder.PriorityOrder.OnlyEnabled().Npc().WinningOverrides())
             {
-                if (npcPreset.EditorID == null) continue;
-                var eid = npcPreset.EditorID;
+                try
+                {
+                    if (npcPreset.EditorID == null) continue;
+                    var eid = npcPreset.EditorID;
+
+                    var withoutLastTwo = (eid.Length > 2) ? eid[..^2] : eid;
+
+                    if (!withoutLastTwo.EndsWith("Preset") && !npcPreset.Race.Equals(Skyrim.Race.FoxRace))
+                    {
+
+                        var changed = false;
+                        var npcPartTypes = new HashSet<HeadPart.TypeEnum>();
+
+                        var npcDeepCopy = npcPreset.DeepCopy();
+
+                        foreach (var part in npcDeepCopy.HeadParts)
+                        {
+                            if (!part.TryResolve(state.LinkCache, out var headPartGetter)) continue;
+                            if (headPartGetter.Type != null) npcPartTypes.Add((HeadPart.TypeEnum) headPartGetter.Type);
+                        }
+
+                        var raceHeadParts = npcDeepCopy.Configuration.Flags.HasFlag(NpcConfiguration.Flag.Female)
+                            ? raceHeadPartsFemale
+                            : raceHeadPartsMale;
+
+                        if (!raceHeadParts.TryGetValue(npcDeepCopy.Race, out var currentRaceHeadParts))
+                        {
+                            continue;
+                        }
+
+                        foreach (var part in currentRaceHeadParts)
+                        {
+                            part.TryResolve(state.LinkCache, out var headPartGetter);
+                            if (headPartGetter?.Type == null) continue;
+                            if (npcPartTypes.Contains((HeadPart.TypeEnum) headPartGetter.Type)) continue;
+                            npcDeepCopy.HeadParts.Add(part);
+                            changed = true;
+                        }
+
+                        if (changed)
+                        {
+                            state.PatchMod.Npcs.Set(npcDeepCopy);
+                        }
+                    }
+
+                    if (!withoutLastTwo.EndsWith("Preset")) continue;
+                    var npcOverride = state.PatchMod.Npcs.GetOrAddAsOverride(npcPreset);
+                    for (var index = 0; index < npcOverride.HeadParts.Count; index++)
+                    {
+                        if (!vanillaToHphParts.TryGetValue(npcOverride.HeadParts[index], out var replacementHead))
+                        {
+                            continue;
+                        }
+
+                        npcOverride.HeadParts[index] = replacementHead;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Error: {e.Message}");
+                    Console.WriteLine($"Error NPC: {npcPreset}");
+                    Console.WriteLine($"Error NPC EditorID: {npcPreset.EditorID}");
+                    Console.WriteLine($"Stack trace: {e.StackTrace}");
+                }
                 
-                var withoutLastTwo = (eid.Length > 2) ? eid[..^2] : eid;
-
-                if (!withoutLastTwo.EndsWith("Preset") && !npcPreset.Race.Equals(Skyrim.Race.FoxRace))
-                {
-
-                    var changed = false;
-                    var npcPartTypes = new HashSet<HeadPart.TypeEnum>();
-
-                    var npcDeepCopy = npcPreset.DeepCopy();
-                    
-                    foreach (var part in npcDeepCopy.HeadParts)
-                    {
-                        if (!part.TryResolve(state.LinkCache, out var headPartGetter)) continue;
-                        if (headPartGetter.Type != null) npcPartTypes.Add((HeadPart.TypeEnum) headPartGetter.Type);
-                    }
-
-                    var raceHeadParts = npcDeepCopy.Configuration.Flags.HasFlag(NpcConfiguration.Flag.Female)
-                        ? raceHeadPartsFemale
-                        : raceHeadPartsMale;
-                    
-                    if (!raceHeadParts.TryGetValue(npcDeepCopy.Race, out var currentRaceHeadParts))
-                    {
-                        continue;
-                    }
-                        
-                    foreach (var part in currentRaceHeadParts)
-                    {
-                        part.TryResolve(state.LinkCache, out var headPartGetter);
-                        if (headPartGetter?.Type == null) continue;
-                        if (npcPartTypes.Contains((HeadPart.TypeEnum) headPartGetter.Type)) continue;
-                        npcDeepCopy.HeadParts.Add(part);
-                        changed = true;
-                    }
-
-                    if (changed)
-                    {
-                        state.PatchMod.Npcs.Set(npcDeepCopy);
-                    }
-                }
-
-                if (!withoutLastTwo.EndsWith("Preset")) continue;
-                var npcOverride = state.PatchMod.Npcs.GetOrAddAsOverride(npcPreset);
-                for (var index = 0; index < npcOverride.HeadParts.Count; index++)
-                {
-                    if (!vanillaToHphParts.TryGetValue(npcOverride.HeadParts[index], out var replacementHead))
-                    {
-                        continue;
-                    }
-                    npcOverride.HeadParts[index] = replacementHead;
-                }
             }
         }
     }
