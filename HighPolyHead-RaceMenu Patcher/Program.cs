@@ -68,6 +68,32 @@ namespace HighPolyHeadUpdateRaces
                 {
                     continue;
                 }
+
+                // additional logic by ra2phoenix
+
+                // exit if it does not have the Playable race flag UNLESS: has the FaceGen race flag AND it has a
+                // race morph entry (these are always vanilla races generally so don't need to check what it is)
+                // also do not process (DremoraRace, SnowElfRace, DLC1NordRace, DLC2DremoraRace, DLC2MiraakRace)
+                if (!raceRecord.Flags.HasFlag(Race.Flag.Playable))
+                {
+                    if (!raceRecord.Flags.HasFlag(Race.Flag.FaceGenHead) ||
+                        (raceRecord.MorphRace.IsNull))
+                    {
+                        continue;
+                    }
+                }
+
+                if(raceRecord.Equals(Skyrim.Race.DremoraRace)
+                        || raceRecord.EditorID == "SnowElfRace"
+                        || raceRecord.EditorID == "DLC1NordRace"
+                        || raceRecord.EditorID == "DLC2DremoraRace"
+                        || raceRecord.EditorID == "DLC2MiraakRace")
+                {
+                    continue;
+                }
+
+                // end additional logic
+
                 var hasMaleOverride = false;
                 var hasFemaleOverride = false;
                 if (raceRecord.HeadData.Male != null)
@@ -144,6 +170,41 @@ namespace HighPolyHeadUpdateRaces
 
                     if (!withoutLastTwo.EndsWith("Preset") && !npcPreset.Race.Equals(Skyrim.Race.FoxRace))
                     {
+                        // additional filtering - ra2phoenix
+                        // don't need to patch DefaultRace
+                        if (npcPreset.Race.Equals(Skyrim.Race.DefaultRace))
+                            continue;
+
+                        // don't need npc templates with Traits
+                        if (npcPreset.Configuration.TemplateFlags.HasFlag(NpcConfiguration.TemplateFlag.Traits))
+                            continue;
+
+                        // exit if it does not have the Playable race flag UNLESS: has the FaceGen race flag AND it has a
+                        // race morph entry (these are always vanilla races generally so don't need to check what it is)
+                        // also don't process (DremoraRace, SnowElfRace, DLC1NordRace, DLC2DremoraRace, DLC2MiraakRace)
+                        npcPreset.Race.TryResolve(state.LinkCache, out var npcRace);
+
+                        if(npcRace != null && !npcRace.Flags.HasFlag(Race.Flag.Playable))
+                        {
+                            if (!npcRace.Flags.HasFlag(Race.Flag.FaceGenHead) || 
+                                (npcRace.MorphRace.IsNull
+                                ))
+                            {
+                                continue;
+                            }
+                        }    
+
+                        if(npcRace == null 
+                            || npcRace.Equals(Skyrim.Race.DremoraRace)
+                            || npcRace.EditorID == "SnowElfRace"
+                            || npcRace.EditorID == "DLC1NordRace"
+                            || npcRace.EditorID == "DLC2DremoraRace"
+                            || npcRace.EditorID == "DLC2MiraakRace")
+                        {
+                            continue;
+                        }
+
+                        // end additional filtering
 
                         var changed = false;
                         var npcPartTypes = new HashSet<HeadPart.TypeEnum>();
